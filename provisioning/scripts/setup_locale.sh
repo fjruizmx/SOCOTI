@@ -5,6 +5,11 @@
 
 set -e
 
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Este script debe ejecutarse como root, wey." >&2
+    exit 1
+fi
+
 echo "[SOCOTI] Instalando soporte de locales y zona horaria..."
 apt update && apt install -y locales tzdata
 
@@ -13,7 +18,7 @@ sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 locale-gen
 
 echo "[SOCOTI] Estableciendo variables de entorno globales..."
-cat <<EOF > /etc/default/locale
+cat <<EOF | tee /etc/default/locale
 LANG=en_US.UTF-8
 LC_ALL=en_US.UTF-8
 LANGUAGE=en_US.UTF-8
@@ -29,4 +34,5 @@ dpkg-reconfigure -f noninteractive tzdata
 
 echo "[SOCOTI] Configuración de locale y zona horaria completada."
 locale
-timedatectl
+echo "[SOCOTI] Zona horaria actual:"
+timedatectl | grep "Time zone"
